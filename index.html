@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="author" content="Kayque Pereira da Silva">
+    <title>Slipper-AUX | System</title>
+    <style>
+        /* ESTILOS GERAIS */
+        body {
+            background-color: #000000;
+            color: #ffffff;
+            font-family: 'Courier New', Courier, monospace;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* EFEITO MATRIX FUNDO */
+        #matrix-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            color: #1a1a1a;
+            font-size: 12px;
+            z-index: -1;
+            line-height: 1;
+            user-select: none;
+            display: none;
+        }
+
+        /* TELA DE LOGIN */
+        #login-box {
+            width: 85%;
+            max-width: 320px;
+            padding: 30px;
+            border: 2px solid #ffffff;
+            background-color: #0a0a0a;
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.1);
+            text-align: center;
+            z-index: 10;
+        }
+
+        h2 { font-size: 1.5rem; margin-bottom: 25px; letter-spacing: 4px; text-transform: uppercase; border-bottom: 1px solid #ffffff; padding-bottom: 10px; }
+        .input-container { text-align: left; margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-size: 0.8rem; font-weight: bold; }
+        input { width: 100%; padding: 12px; background-color: #000; border: 1px solid #fff; color: #fff; font-family: inherit; box-sizing: border-box; outline: none; }
+        
+        /* PAINEL PRINCIPAL */
+        #painel-aux {
+            display: none;
+            width: 90%;
+            max-width: 380px;
+            background: rgba(10, 10, 10, 0.95);
+            border: 1px solid #333;
+            border-radius: 25px;
+            overflow: hidden;
+            box-shadow: 0 0 30px rgba(255, 255, 255, 0.05);
+            z-index: 20;
+        }
+
+        .sidebar { width: 65px; background: #050505; border-right: 1px solid #222; display: flex; flex-direction: column; align-items: center; padding: 20px 0; }
+        .icon { width: 40px; height: 40px; margin-bottom: 15px; border: 1px solid #333; border-radius: 12px; display: flex; justify-content: center; align-items: center; color: #666; cursor: pointer; transition: 0.3s; }
+        .icon.active { border-color: #fff; color: #fff; box-shadow: 0 0 10px rgba(255,255,255,0.2); }
+
+        .main-content { flex: 1; padding: 25px; min-height: 350px; }
+        .main-content h3 { margin: 0 0 20px 0; font-size: 1.1rem; letter-spacing: 1px; text-transform: uppercase; border-left: 3px solid #fff; padding-left: 10px; }
+
+        /* SEÇÕES */
+        .page { display: none; }
+        .page.active { display: block; }
+
+        .item { background: #111; padding: 15px; border-radius: 12px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #222; }
+        .item span { font-size: 0.75rem; color: #ccc; font-weight: bold; }
+
+        /* BOTÕES DE ABRIR JOGO */
+        .btn-launch {
+            width: 100%;
+            padding: 20px;
+            background: #fff;
+            color: #000;
+            border: none;
+            border-radius: 12px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        .btn-launch:active { transform: scale(0.98); background: #ccc; }
+
+        /* SWITCH TOGGLE */
+        .switch { width: 42px; height: 22px; background: #333; border-radius: 20px; position: relative; cursor: pointer; transition: 0.3s; }
+        .switch::before { content: ''; position: absolute; width: 16px; height: 16px; background: #888; border-radius: 50%; top: 3px; left: 3px; transition: 0.3s; }
+        .active-switch { background: #fff !important; }
+        .active-switch::before { left: 23px; background: #000 !important; }
+
+        /* SLIDER */
+        .slider-box { margin-top: 10px; background: #111; padding: 15px; border-radius: 12px; border: 1px solid #222; }
+        input[type="range"] { width: 100%; accent-color: #fff; cursor: pointer; margin-top: 10px; }
+
+        /* MIRA E ALVO */
+        #mira { position: absolute; width: 20px; height: 20px; border: 2px solid white; border-radius: 50%; pointer-events: none; z-index: 999; display: none; }
+        #inimigo { position: absolute; top: 200px; left: 300px; width: 40px; height: 40px; background: red; border-radius: 5px; display: none; }
+    </style>
+</head>
+<body>
+
+    <div id="matrix-bg"></div>
+
+    <div id="login-box">
+        <h2>SLIPPER-AUX</h2>
+        <form id="formLogin">
+            <div class="input-container">
+                <label>USER_ID:</label>
+                <input type="text" id="user" placeholder="Slipper" required>
+            </div>
+            <div class="input-container">
+                <label>PASSWORD:</label>
+                <input type="password" id="pass" placeholder="AUX" required>
+            </div>
+            <button type="submit" style="width:100%; padding:15px; margin-top:20px; background:#fff; color:#000; border:none; font-weight:bold; text-transform:uppercase;">Executar Login</button>
+        </form>
+    </div>
+
+    <div id="painel-aux">
+        <div style="display: flex; width: 100%;">
+            <div class="sidebar">
+                <div class="icon active" onclick="showPage('config', this)">◎</div>
+                <div class="icon" onclick="showPage('foguete', this)">🚀</div>
+            </div>
+
+            <div class="main-content">
+                <div id="page-config" class="page active">
+                    <h3>Scripts</h3>
+                    <div class="item"><span>SEM RECUO</span><div class="switch" onclick="this.classList.toggle('active-switch')"></div></div>
+                    <div class="item"><span>PRECISÃO AVANÇADA</span><div class="switch" onclick="this.classList.toggle('active-switch')"></div></div>
+                    <div class="item"><span>120 FPS</span><div class="switch" onclick="this.classList.toggle('active-switch')"></div></div>
+                    <div class="item"><span>OTIMIZAÇÃO</span><div class="switch" onclick="this.classList.toggle('active-switch')"></div></div>
+                    <div class="slider-box">
+                        <span style="font-size: 0.7rem; color: #666;">PRECISÃO: <b id="val">89</b>%</span>
+                        <input type="range" min="0" max="100" value="89" oninput="document.getElementById('val').innerText = this.value">
+                    </div>
+                </div>
+
+                <div id="page-foguete" class="page">
+                    <h3>Lançador</h3>
+                    <button class="btn-launch" onclick="abrirJogo('freefire://')">
+                        🎮 Abrir Free Fire
+                    </button>
+                    <button class="btn-launch" onclick="abrirJogo('freefiremax://')">
+                        🔥 Abrir Free Fire MAX
+                    </button>
+                    <p style="font-size: 0.6rem; color: #444; text-align: center; margin-top: 20px;">
+                        Otimizando ambiente antes de iniciar...
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="mira"></div>
+    <div id="inimigo"></div>
+
+    <script>
+        let sistemaAtivo = false;
+
+        // LOGIN
+        document.getElementById('formLogin').addEventListener('submit', function(e) {
+            e.preventDefault();
+            if (document.getElementById('user').value === "Slipper" && document.getElementById('pass').value === "AUX") {
+                document.getElementById('login-box').style.display = 'none';
+                document.getElementById('painel-aux').style.display = 'flex';
+                document.getElementById('matrix-bg').style.display = 'block';
+                document.getElementById('mira').style.display = 'block';
+                document.getElementById('inimigo').style.display = 'block';
+                sistemaAtivo = true;
+                iniciarMatrix();
+            } else { alert("Erro de Login"); }
+        });
+
+        // COMANDO PARA ABRIR JOGOS
+        function abrirJogo(url) {
+            window.location.href = url;
+        }
+
+        // NAVEGAÇÃO
+        function showPage(pageId, icon) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.icon').forEach(i => i.classList.remove('active'));
+            document.getElementById('page-' + pageId).classList.add('active');
+            icon.classList.add('active');
+        }
+
+        // AUXÍLIO DE MIRA
+        const mira = document.getElementById('mira');
+        const inimigo = document.getElementById('inimigo');
+
+        document.addEventListener('mousemove', (e) => {
+            if(!sistemaAtivo) return;
+            let mouseX = e.clientX;
+            let mouseY = e.clientY;
+            const rect = inimigo.getBoundingClientRect();
+            const inimigoX = rect.left + rect.width / 2;
+            const inimigoY = rect.top + rect.height / 2;
+            const distX = inimigoX - mouseX;
+            const distY = inimigoY - mouseY;
+            const distancia = Math.sqrt(distX * distX + distY * distY);
+            if (distancia < 150) {
+                mouseX += distX * 0.3;
+                mouseY += distY * 0.3;
+            }
+            mira.style.left = (mouseX - 10) + 'px';
+            mira.style.top = (mouseY - 10) + 'px';
+        });
+
+        // MATRIX
+        function iniciarMatrix() {
+            const bg = document.getElementById('matrix-bg');
+            let txt = '';
+            for(let i=0; i<2500; i++) { txt += Math.floor(Math.random()*2); if(i%50==0) txt+='<br>'; }
+            bg.innerHTML = txt;
+            setInterval(() => { bg.innerHTML = bg.innerHTML.replace(/[01]/g, () => Math.floor(Math.random()*2)); }, 100);
+        }
+    </script>
+</body>
+</html>
